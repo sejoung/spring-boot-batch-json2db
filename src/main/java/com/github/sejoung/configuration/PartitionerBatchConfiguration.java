@@ -1,5 +1,8 @@
 package com.github.sejoung.configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -48,6 +51,11 @@ public class PartitionerBatchConfiguration {
     @Bean
     public AudienceADLogLineMapper audienceADLogLineMapper() {
         return new AudienceADLogLineMapper();
+    }
+    
+    @Bean
+    public Map<String, Integer>  audienceADLogCache() {
+        return new HashMap<String, Integer>();
     }
 
     @Bean
