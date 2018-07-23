@@ -91,7 +91,7 @@ public class PartitionerBatchConfiguration {
 
     @Bean
     public Step partitionStep() {
-        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(10).build();
+        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(20).build();
     }
 
     @Bean
