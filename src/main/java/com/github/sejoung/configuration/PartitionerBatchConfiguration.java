@@ -5,13 +5,19 @@ import java.util.Map;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.partition.support.MultiResourcePartitioner;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.builder.TaskletStepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -52,9 +58,9 @@ public class PartitionerBatchConfiguration {
     public AudienceADLogLineMapper audienceADLogLineMapper() {
         return new AudienceADLogLineMapper();
     }
-    
+
     @Bean
-    public Map<String, Integer>  audienceADLogCache() {
+    public Map<String, Integer> audienceADLogCache() {
         return new HashMap<String, Integer>();
     }
 
@@ -79,27 +85,52 @@ public class PartitionerBatchConfiguration {
     }
 
     @Bean
-    public Job importUserJob(JobCompletionNotificationListener listener, Step partitionStep) {
-        return jobBuilderFactory.get("importUserJob").incrementer(new RunIdIncrementer()).listener(listener).start(partitionStep).build();
+    public Job importUserJob(JobCompletionNotificationListener listener, Step step2) {
+        return jobBuilderFactory.get("importUserJob").incrementer(new RunIdIncrementer()).listener(listener).start(partitionStep()).next(step2).build();
     }
 
-    @Bean(name = "partitionStep")
+    @Bean
     public Step partitionStep() {
         return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(10).build();
     }
 
-    @Bean(name = "step1")
+    @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1").<AudienceADLog, AudienceADLog>chunk(1).reader(audienceADLogReader(null)).processor(audienceADLogItemProcessor()).listener(chunkListener()).listener(stepExecutionListener()).build();
     }
 
+    @Bean
+    public Step step2(Map<String, Integer> audienceADLogCache) {
+        StepBuilder step2 = stepBuilderFactory.get("step2");
+        TaskletStepBuilder tasklet = step2.tasklet(new Tasklet() {
+            @Override
+            public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+                log.debug("step2 start");
+
+                for (Map.Entry<String, Integer> entry : audienceADLogCache.entrySet()) {
+                    log.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+                }
+
+                log.debug("step2 end");
+
+                return RepeatStatus.FINISHED;
+            }
+        });
+
+        // true: 이 단계가 이미 완료 되었더라도 모든 작업 실행은이 단계를 수행합니다.
+        // false: 작업이 중단되고 다시 실행되면이 단계가 다시 수행되지 않습니다.
+        tasklet.allowStartIfComplete(false);
+
+        return tasklet.build();
+    }
+
     @StepScope
-    @Bean(name = "audienceADLogReader")
+    @Bean
     public FlatFileItemReader<AudienceADLog> audienceADLogReader(@Value("#{stepExecutionContext['fileName']}") Resource resource) {
         return new FlatFileItemReaderBuilder<AudienceADLog>().name("audienceADLogReader").resource(resource).lineMapper(audienceADLogLineMapper()).build();
     }
 
-    @Bean(name = "audienceADLogPartitioner")
+    @Bean
     public MultiResourcePartitioner partitioner() {
         MultiResourcePartitioner partitioner = new MultiResourcePartitioner();
         partitioner.setResources(resources);
