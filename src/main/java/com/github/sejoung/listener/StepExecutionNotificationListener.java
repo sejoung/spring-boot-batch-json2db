@@ -11,11 +11,13 @@ public class StepExecutionNotificationListener extends StepExecutionListenerSupp
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
+//        log.info("afterStep");
         return super.afterStep(stepExecution);
     }
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
+//        log.info("beforeStep ");
         super.beforeStep(stepExecution);
     }
 

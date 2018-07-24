@@ -1,15 +1,17 @@
 package com.github.sejoung.configuration;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.sql.DataSource;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.configuration.annotation.DefaultBatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.partition.support.MultiResourcePartitioner;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -24,7 +26,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
+import com.github.sejoung.Incrementer.CurrentTimeIncrementer;
 import com.github.sejoung.linemapper.AudienceADLogLineMapper;
 import com.github.sejoung.listener.ChunkExecutionListener;
 import com.github.sejoung.listener.JobCompletionNotificationListener;
@@ -40,7 +44,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Configuration
-public class PartitionerBatchConfiguration {
+public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
@@ -54,6 +61,12 @@ public class PartitionerBatchConfiguration {
     @Value("audiencelog/*/*/*.log")
     private Resource[] resources;
 
+    @Override
+    public void setDataSource(DataSource dataSource) {
+        // override to do not set datasource even if a datasource exist.
+        // initialize will use a Map based JobRepository (instead of database)
+    }
+
     @Bean
     public AudienceADLogLineMapper audienceADLogLineMapper() {
         return new AudienceADLogLineMapper();
@@ -61,7 +74,7 @@ public class PartitionerBatchConfiguration {
 
     @Bean
     public Map<String, Integer> audienceADLogCache() {
-        return new HashMap<String, Integer>();
+        return new ConcurrentHashMap<String, Integer>();
     }
 
     @Bean
@@ -86,12 +99,12 @@ public class PartitionerBatchConfiguration {
 
     @Bean
     public Job importUserJob(JobCompletionNotificationListener listener, Step step2) {
-        return jobBuilderFactory.get("importUserJob").incrementer(new RunIdIncrementer()).listener(listener).start(partitionStep()).next(step2).build();
+        return jobBuilderFactory.get("importUserJob").incrementer(new CurrentTimeIncrementer()).listener(listener).start(partitionStep()).next(step2).build();
     }
 
     @Bean
     public Step partitionStep() {
-        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(20).build();
+        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).build();
     }
 
     @Bean
@@ -106,11 +119,15 @@ public class PartitionerBatchConfiguration {
             @Override
             public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
                 log.debug("step2 start");
+        /*        
+                redisTemplate.keys("*").forEach((s) -> {
+                    log.info("Key = " + s + ", Value = " + redisTemplate.opsForValue().get(s));
+                });
+*/
 
                 for (Map.Entry<String, Integer> entry : audienceADLogCache.entrySet()) {
                     log.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
                 }
-
                 log.debug("step2 end");
 
                 return RepeatStatus.FINISHED;

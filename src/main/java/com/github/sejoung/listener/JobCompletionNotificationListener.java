@@ -18,7 +18,7 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
     @Override
     public void beforeJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.STARTED) {
-            log.debug("!!! JOB STARTED!");
+            log.info("!!! JOB STARTED!");
             sw.start();
         }
     }
@@ -26,9 +26,9 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            log.debug("!!! JOB FINISHED!");
+            log.info("!!! JOB FINISHED!");
             sw.stop();
         }
-        log.debug("시간 " + (sw.getTotalTimeMillis() / 1000) + "초");
+        log.info("시간 " + (sw.getTotalTimeMillis() / 1000) + "초");
     }
 }

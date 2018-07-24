@@ -13,14 +13,24 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AudienceADLogItemProcessor implements ItemProcessor<AudienceADLog,AudienceADLog> {
-
+/*
     @Autowired
-    Map<String, Integer> audienceADLogCache;
+    private StringRedisTemplate redisTemplate;
+    
+    */
+    @Autowired
+    private Map<String, Integer> audienceADLogCache;
     
     @Override
     public AudienceADLog process(AudienceADLog item) throws Exception {
         //log.debug(item.toString());
         List<InctKc> inctKcs = item.getInctKcs();
+        /*
+        inctKcs.forEach((inctKc)->{
+            redisTemplate.opsForValue().increment(inctKc.getCategory(), 1);
+        });
+        */
+        
         
         inctKcs.forEach((inctKc)->{
             String key = inctKc.getCategory();
@@ -33,7 +43,6 @@ public class AudienceADLogItemProcessor implements ItemProcessor<AudienceADLog,A
             audienceADLogCache.put(key, i+1);
             
         });
-        
         
         return item;
     }
