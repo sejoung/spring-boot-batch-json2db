@@ -58,7 +58,8 @@ public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
     @Autowired
     public TaskExecutor taskExecutor;
 
-    @Value("audiencelog/*/*/*.log")
+    @Value("classpath:audiencelog/*/*/*.log")
+  //  @Value("file:/home/dreamsearch/logs/audience/*/*/*.log")
     private Resource[] resources;
 
     @Override
@@ -104,7 +105,7 @@ public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
 
     @Bean
     public Step partitionStep() {
-        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).build();
+        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(2).build();
     }
 
     @Bean

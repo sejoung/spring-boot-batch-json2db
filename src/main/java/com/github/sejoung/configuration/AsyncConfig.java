@@ -21,27 +21,27 @@ public class AsyncConfig {
         // max pool size에 설정한 값 안에서 thread를 추가로 생성하게 된다.
         // pool size가 처음에는 0 인데 10으로 설정한 경우 core pool size가 10이 초과되면 keepAliveSeconds 시간 이후에 thread를 kill 하는데 
         // core pool size 이하로는 kill을 하지 않는다. pool size 가 10 이상이 된 이후로는 최소 10 pool size를 계속 유지한다.
-        executor.setCorePoolSize(1);
+        executor.setCorePoolSize(2);
 
         // 최대 pool size 지정, 기본값 Integer.MAX, 
         // 기본적으로는 core pool size 안에서 해결하고 core pool size + queue capacity 를 넘는 요청이 왔을 때만 max pool size 안에서 pool를 생성한다.
-        executor.setMaxPoolSize(500);
+        executor.setMaxPoolSize(2);
 
         // 대기열 size 지정, 기본값 Integer.MAX, 
         // 0으로 설정한 경우 queue type이 SynchronousQueue를, 
         // 0 초과로 설정한 경우 LinkedBlockingQueue 를 생성한다. 
         // 해당 값을 0으로 설정하지 않으면 pool size 가 core pool size 이상 생성되지 않는다 (대기열만 Integer.MAX).
-        executor.setQueueCapacity(0);
+        executor.setQueueCapacity(500);
 
         // core thread 를 유지할 timeout (초) 지정, 기본값 60(초), setAllowCoreThreadTimeOut 이 true 일 경우에만 작동한다.
-        executor.setAwaitTerminationSeconds(10);
+        executor.setAwaitTerminationSeconds(60);
 
         // core thread 를 유휴시간 (keepAliveSeconds)이 지나서 kill 할 지 여부, 
         // 기본값 false, true로 설정한 경우 core pool 도 keepAliveSeconds 시간 이후에 thread 를 kill한다. jdk 1.6 이상부터 사용가능.
         executor.setAllowCoreThreadTimeOut(true);
 
         // Prefix thread 명 지정
-        executor.setThreadNamePrefix(" Batch Task Executor ");
+        executor.setThreadNamePrefix("Batch");
 
         // queue 대기열 및 task 가 완료된 이후에 shutdown 여부
         executor.setWaitForTasksToCompleteOnShutdown(true);
