@@ -105,7 +105,7 @@ public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
 
     @Bean
     public Step partitionStep() {
-        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(2).build();
+        return stepBuilderFactory.get("partitionStep").partitioner("step1", partitioner()).step(step1()).taskExecutor(taskExecutor).gridSize(4).build();
     }
 
     @Bean

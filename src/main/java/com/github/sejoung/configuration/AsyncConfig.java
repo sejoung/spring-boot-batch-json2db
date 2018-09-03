@@ -21,11 +21,11 @@ public class AsyncConfig {
         // max pool size에 설정한 값 안에서 thread를 추가로 생성하게 된다.
         // pool size가 처음에는 0 인데 10으로 설정한 경우 core pool size가 10이 초과되면 keepAliveSeconds 시간 이후에 thread를 kill 하는데 
         // core pool size 이하로는 kill을 하지 않는다. pool size 가 10 이상이 된 이후로는 최소 10 pool size를 계속 유지한다.
-        executor.setCorePoolSize(2);
+        executor.setCorePoolSize(4);
 
         // 최대 pool size 지정, 기본값 Integer.MAX, 
         // 기본적으로는 core pool size 안에서 해결하고 core pool size + queue capacity 를 넘는 요청이 왔을 때만 max pool size 안에서 pool를 생성한다.
-        executor.setMaxPoolSize(2);
+        executor.setMaxPoolSize(4);
 
         // 대기열 size 지정, 기본값 Integer.MAX, 
         // 0으로 설정한 경우 queue type이 SynchronousQueue를, 

@@ -1,13 +1,13 @@
 package com.github.sejoung.processor;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.sejoung.model.AudienceADLog;
 import com.github.sejoung.model.InctKc;
+import com.github.sejoung.service.AudienceADLogCacheService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ public class AudienceADLogItemProcessor implements ItemProcessor<AudienceADLog,A
     
     */
     @Autowired
-    private Map<String, Integer> audienceADLogCache;
+    private AudienceADLogCacheService audienceADLogCacheService;
     
     @Override
     public AudienceADLog process(AudienceADLog item) throws Exception {
@@ -35,12 +35,7 @@ public class AudienceADLogItemProcessor implements ItemProcessor<AudienceADLog,A
         inctKcs.forEach((inctKc)->{
             String key = inctKc.getCategory();
             
-            Integer i = audienceADLogCache.get(key);
-            
-            if(i == null) {
-                i=0;
-            }
-            audienceADLogCache.put(key, i+1);
+            audienceADLogCacheService.update(key);
             
         });
         
