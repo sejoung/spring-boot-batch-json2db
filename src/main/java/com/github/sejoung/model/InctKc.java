@@ -1,12 +1,14 @@
 package com.github.sejoung.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author kim se joung
  *
  */
-@Data
+@Getter
+@Setter
 public class InctKc {
     
     private String category;
