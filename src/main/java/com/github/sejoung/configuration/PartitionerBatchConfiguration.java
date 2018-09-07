@@ -1,5 +1,6 @@
 package com.github.sejoung.configuration;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +35,9 @@ import com.github.sejoung.listener.ChunkExecutionListener;
 import com.github.sejoung.listener.JobCompletionNotificationListener;
 import com.github.sejoung.listener.StepExecutionNotificationListener;
 import com.github.sejoung.model.AudienceADLog;
+import com.github.sejoung.model.mongodb.StatsTargetContain;
 import com.github.sejoung.processor.AudienceADLogItemProcessor;
+import com.github.sejoung.repository.StatsTargetContainRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,6 +60,9 @@ public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
 
     @Autowired
     public TaskExecutor taskExecutor;
+    
+    @Autowired
+    public StatsTargetContainRepository statsTargetContainRepository;
 
     @Value("classpath:audiencelog/*/*/*.log")
   //  @Value("file:/home/dreamsearch/logs/audience/*/*/*.log")
@@ -125,10 +131,17 @@ public class PartitionerBatchConfiguration extends DefaultBatchConfigurer {
                     log.info("Key = " + s + ", Value = " + redisTemplate.opsForValue().get(s));
                 });
 */
-
+/*
                 for (Map.Entry<String, Integer> entry : audienceADLogCache.entrySet()) {
                     log.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
                 }
+                */
+                List<StatsTargetContain> list = statsTargetContainRepository.findAll();
+                
+                for(StatsTargetContain sc : list) {
+                    log.info(sc.toString());
+                }
+                
                 log.debug("step2 end");
 
                 return RepeatStatus.FINISHED;
