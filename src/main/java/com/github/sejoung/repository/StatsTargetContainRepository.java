@@ -18,4 +18,6 @@ public interface StatsTargetContainRepository extends MongoRepository<StatsTarge
             "        }\r\n" + 
             "    }")
     public List<StatsTargetContain> findAll();
+
+
 }
